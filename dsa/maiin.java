@@ -1,0 +1,166 @@
+
+import java.util.*;
+
+class Interval {
+    int start, end;
+
+    Interval(int s, int e) {
+        start = s;
+        end = e;
+    }
+}
+
+class Candidate {
+    String id;
+    int priority;
+    List<Interval> windows;
+
+    Candidate(String id, int priority, List<Interval> windows) {
+        this.id = id;
+        this.priority = priority;
+        this.windows = windows;
+    }
+}
+
+class Interviewer {
+    String id;
+    LinkedList<Interval> slots;
+    int capacity;
+
+    Interviewer(String id, LinkedList<Interval> slots, int capacity) {
+        this.id = id;
+        this.slots = slots;
+        this.capacity = capacity;
+    }
+}
+
+public class InterviewSchedulingOptimizer {
+
+    PriorityQueue<Candidate> candidateHeap;
+    Map<String, Interviewer> interviewers;
+    List<String> schedule;
+    List<String> unscheduled;
+
+    public InterviewSchedulingOptimizer() {
+        candidateHeap = new PriorityQueue<>(
+            (a, b) -> b.priority - a.priority
+        );
+        interviewers = new HashMap<>();
+        schedule = new ArrayList<>();
+        unscheduled = new ArrayList<>();
+    }
+
+    static List<Interval> parseRanges(String ranges) {
+        List<Interval> list = new ArrayList<>();
+        for (String r : ranges.split(",")) {
+            String[] parts = r.split("-");
+            list.add(new Interval(
+                Integer.parseInt(parts[0]),
+                Integer.parseInt(parts[1])
+            ));
+        }
+        return list;
+    }
+
+    static Integer findOverlap(List<Interval> cWindows, LinkedList<Interval> iSlots) {
+        for (Interval c : cWindows) {
+            for (Interval i : iSlots) {
+                int start = Math.max(c.start, i.start);
+                if (start + 1 <= Math.min(c.end, i.end)) {
+                    return start;
+                }
+            }
+        }
+        return null;
+    }
+
+    static void consumeInterval(LinkedList<Interval> list, int time) {
+        ListIterator<Interval> it = list.listIterator();
+        while (it.hasNext()) {
+            Interval in = it.next();
+            if (in.start <= time && time + 1 <= in.end) {
+                it.remove();
+                if (in.start < time)
+                    it.add(new Interval(in.start, time));
+                if (time + 1 < in.end)
+                    it.add(new Interval(time + 1, in.end));
+                return;
+            }
+        }
+    }
+
+    public void addCandidate(String id, int priority, String windows) {
+        candidateHeap.add(
+            new Candidate(id, priority, parseRanges(windows))
+        );
+    }
+
+    public void addInterviewer(String id, String slots, int capacity) {
+        interviewers.put(
+            id,
+            new Interviewer(id,
+                new LinkedList<>(parseRanges(slots)),
+                capacity)
+        );
+    }
+
+    public void scheduleInterviews() {
+        while (!candidateHeap.isEmpty()) {
+            Candidate c = candidateHeap.poll();
+            Interviewer best = null;
+            Integer bestTime = null;
+            int maxCap = -1;
+
+            for (Interviewer i : interviewers.values()) {
+                if (i.capacity > 0) {
+                    Integer t = findOverlap(c.windows, i.slots);
+                    if (t != null && i.capacity > maxCap) {
+                        best = i;
+                        bestTime = t;
+                        maxCap = i.capacity;
+                    }
+                }
+            }
+
+            if (best == null) {
+                unscheduled.add(c.id);
+            } else {
+                schedule.add(
+                    "Candidate " + c.id + " with Interviewer " +
+                    best.id + " from " + bestTime +
+                    " to " + (bestTime + 1)
+                );
+                consumeInterval(best.slots, bestTime);
+                consumeInterval(
+                    new LinkedList<>(c.windows), bestTime
+                );
+                best.capacity--;
+            }
+        }
+    }
+
+    public void report() {
+        System.out.println("\nScheduled Interviews:");
+        for (String s : schedule)
+            System.out.println(s);
+
+        System.out.println("\nUnscheduled Candidates:");
+        for (String u : unscheduled)
+            System.out.println(u);
+    }
+
+    public static void main(String[] args) {
+        InterviewSchedulingOptimizer scheduler =
+            new InterviewSchedulingOptimizer();
+
+        scheduler.addCandidate("C1", 90, "9-12,14-17");
+        scheduler.addCandidate("C2", 70, "10-13");
+        scheduler.addCandidate("C3", 85, "9-11");
+
+        scheduler.addInterviewer("I1", "9-12,13-16", 2);
+        scheduler.addInterviewer("I2", "10-14", 1);
+
+        scheduler.scheduleInterviews();
+        scheduler.report();
+    }
+}
