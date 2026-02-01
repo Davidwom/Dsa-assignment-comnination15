@@ -41,9 +41,30 @@ Each interviewer has:
 - Generate a report of:
   - Scheduled interviews
   - Unscheduled candidates
-
-# How to Run the Program
-
-# 1. Compile the program
-```bash
-javac InterviewSchedulingOptimizer.java
+ # VIP Restaurant Manager (Problem 31)
+## Project Overview
+This project implements **Problem 31 – The VIP Restaurant Manager** from the Data Structures and Algorithms assignment.
+The system manages a restaurant waiting line where:
+- VIP customers are given higher priority
+- Regular customers join at the back
+- Any customer can leave the line at any time
+- The host always seats the customer at the front
+The goal is to efficiently manage arrivals, departures, and seating using appropriate data structures.
+## Data Structures Used
+### 1. Doubly Linked List
+- Maintains the order of customers in the waiting line
+- Allows:
+  - O(1) insertion at the front (VIPs)
+  - O(1) insertion at the back (Regular customers)
+  - O(1) removal from the middle (when a customer leaves)
+### 2. HashMap `<String, Node>`
+- Maps customer names to their corresponding linked list nodes
+- Enables O(1) lookup for the `LEAVE <name>` operation
+## Project Structure
+- `Node.java` → Represents a customer in the waiting line
+- `VIPRestaurantManager.java` → Contains all business logic
+- `Main.java` → Entry point and testing
+## How to Run
+1. Open the project in **VS Code**
+2. Open `Main.java`
+3. Click **Run ▶** or right-click → **Run Java**
