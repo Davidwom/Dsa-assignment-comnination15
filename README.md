@@ -32,7 +32,6 @@ Each interviewer has:
 - **Max Heap (PriorityQueue)** – to process candidates by priority
 - **ArrayList & LinkedList** – to manage availability intervals
 - **HashMap** – to store interviewers efficiently
-- **Queue/List** – to store scheduled and unscheduled results
 
 #Features Implemented
 - Add candidates with priority and availability windows
